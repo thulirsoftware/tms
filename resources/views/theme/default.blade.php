@@ -148,7 +148,7 @@
 <script type="text/javascript">
 
 $(document).ready(function(){
- setTimeout(checkNewNotification,5000);
+ //setTimeout(checkNewNotification,5000);
 });
 
    function checkNewNotification() { 
@@ -175,6 +175,15 @@ $(document).ready(function(){
                       exit();
                     } 
       },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }, 
       complete:function(data){
        setTimeout(checkNewNotification,5000);
       }

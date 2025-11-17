@@ -93,7 +93,16 @@
                     console.log(data, "data");
                     $('#linksFilteration').empty();
                     $('#linksFilteration').html(data['links']);
-                }
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
+                    }
+                } 
             });
 
 

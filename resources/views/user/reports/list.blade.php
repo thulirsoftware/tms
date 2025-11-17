@@ -235,9 +235,15 @@ $.ajax({
     data: formData,
    processData: false,
     contentType: false,
-   error : function (result) {
-       console.log('error', result);
-   },
+    error: function (xhr, status, error) {
+        if (xhr.status === 419) {
+            alert('CSRF token mismatch');
+            location.reload(true);
+        } else {
+            console.error("Error: " + error);
+            alert('An error occurred. Please try again later.');
+        }
+    },
    success : function (result) {
       console.log('success', result)
    }

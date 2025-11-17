@@ -213,7 +213,16 @@
               console.log(data);
              $('#leads').empty();
              $('#leads').html(data['leads']);
-           } 
+           },
+          error: function (xhr, status, error) {
+              if (xhr.status === 419) {
+                  alert('CSRF token mismatch');
+                  location.reload(true);
+              } else {
+                  console.error("Error: " + error);
+                  alert('An error occurred. Please try again later.');
+              }
+          }  
           });
           $('#dataModal').modal('show'); 
       }
@@ -235,7 +244,16 @@
               console.log(data);
              $('#leads').empty();
              $('#leads').html(data['leads']);
-           } 
+           },
+            error: function (xhr, status, error) {
+                if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }  
           });
           $('#dataModal').modal('show'); 
     }

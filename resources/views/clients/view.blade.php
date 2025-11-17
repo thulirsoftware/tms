@@ -380,7 +380,16 @@
                         type: 'DELETE',
                         data: { _token: token },
                         success: () => $(this).closest('tr').remove(),
-                        error: () => alert('Failed to delete')
+                       
+                        error: function (xhr, status, error) {
+                            if (xhr.status === 419) {
+                                alert('CSRF token mismatch');
+                                location.reload(true);
+                            } else {
+                                console.error("Error: " + error);
+                                alert('An error occurred. Please try again later.');
+                            }
+                        } 
                     });
                 }
             });

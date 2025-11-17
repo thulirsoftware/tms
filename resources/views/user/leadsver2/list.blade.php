@@ -241,7 +241,16 @@ function search()
            $('#leads_mobile').empty();
            $('#leads').html(data['leads']);
            $('#leads_mobile').html(data['leads_mobile']);
-         } 
+         },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }  
        });
 }
 
@@ -254,7 +263,16 @@ function reset()
           success:function(data){
             console.log(data);
             location.reload(); 
-         } 
+         },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }  
        });
 }
 
@@ -268,7 +286,16 @@ function Delete(id)
           success:function(data){
             console.log(data);
             location.reload(); 
-         } 
+         },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }  
        });
 }
 

@@ -16,13 +16,20 @@ class checkRoute
      */
     public function handle($request, Closure $next)
     {
-        if (Auth::user()->type == 'admin') {
-            return $next($request);
+        if(auth()->check())
+        {
+             if (Auth::user()->type == 'admin') {
+                return $next($request);
+            }
+            if (Auth::user()->type === 'employee') {
+                return $next($request); // allow employee
+            }
+            return redirect('/');
         }
-        if (Auth::user()->type === 'employee') {
-            return $next($request); // allow employee
+        else{
+             return redirect('/');
         }
-        return redirect('/');
+       
 
     }
 }

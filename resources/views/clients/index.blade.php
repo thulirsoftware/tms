@@ -210,7 +210,16 @@
                         $(this).closest('tr').css('background-color', '#ffdddd').fadeOut(600, function () {
                             $(this).remove();
                         });
-                    }
+                    },
+                    error: function (xhr, status, error) {
+                        if (xhr.status === 419) {
+                            alert('CSRF token mismatch');
+                            location.reload(true);
+                        } else {
+                            console.error("Error: " + error);
+                            alert('An error occurred. Please try again later.');
+                        }
+                    } 
                 });
             }
         });

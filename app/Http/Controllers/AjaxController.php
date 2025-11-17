@@ -122,17 +122,102 @@ class AjaxController extends Controller
 
         // Fetch the task using the appropriate model
         $task = $isIntern ? InternTask::find($request->taskId) : Task::find($request->taskId);
+        $endTimeFormatted = $request->time;
+        if ($task->takenDate != date('Y-m-d')) {
+            $tasksInDate = $isIntern ? InternTask::where('takenDate', $task->takenDate)
+                ->where('endTime', '!=', null)
+                ->get() :
+                Task::where('takenDate', $task->takenDate)
+                ->where('endTime', '!=', null)
+                ->get();
+            $totalSeconds = 0;
 
+            foreach ($tasksInDate as $t) {
+
+                 list($sh, $sm, $ss) = explode(':', $t->startTime);
+                $startSeconds = ($sh * 3600) + ($sm * 60) + $ss;
+
+                 list($eh, $em, $es) = explode(':', $t->endTime);
+                $endSeconds = ($eh * 3600) + ($em * 60) + $es;
+
+                 if ($endSeconds < $startSeconds) {
+                    $endSeconds += 24 * 3600;
+                }
+
+                 $totalSeconds += ($endSeconds - $startSeconds);
+            }
+            $tasksInEndTimeNull = $isIntern ? InternTask::where('takenDate', $task->takenDate)
+                ->where('endTime', '=', null)
+                ->first() :
+                Task::where('takenDate', $task->takenDate)
+                ->where('endTime', '=', null)
+                ->first();
+            $diffInHours = 0;
+            if ($tasksInEndTimeNull) {
+                $date = $task->takenDate; // YYYY-MM-DD
+                $start = Carbon::createFromFormat('Y-m-d H:i:s', $date . ' ' . $task->startTime);
+                $now   =  Carbon::createFromFormat('Y-m-d H:i:s', date('Y-m-d') . ' ' . $request->time);
+
+                $diffInHours = $start->diffInHours($now);
+            }
+
+            // Convert seconds → hours
+            $totalHours = $totalSeconds / 3600;
+            $working_hours = $totalHours + $diffInHours;
+
+
+
+            // Check if more than 8 hrs
+            $moreThan8 = $working_hours > 8 ? 1 : 0;
+
+            if ($moreThan8) {
+                $remaining_hours_add = 8 - $totalHours;
+                $startTime = Carbon::createFromFormat('H:i:s', $task->startTime);
+                $endTime = $startTime->copy()->addHours(floor($remaining_hours_add))
+                    ->addMinutes(($remaining_hours_add - floor($remaining_hours_add)) * 60);
+
+                $endTimeFormatted = $endTime->format('H:i:s');
+
+                $startTime = Carbon::createFromFormat('H:i:s', $task->startTime);
+                $endTime = Carbon::createFromFormat('H:i:s', $endTimeFormatted);
+
+                // Calculate difference in total minutes
+                if ($endTime->lessThanOrEqualTo($startTime)) {
+                    $endTime->addDay();
+                }
+
+                // Calculate difference
+                $diffInMinutes = $endTime->diffInMinutes($startTime);
+
+                $hours = intdiv($diffInMinutes, 60);
+                $minutes = $diffInMinutes % 60;
+            } else {
+                $etime = explode(':', $request->time);
+                $stime = explode(':', $task->startTime);
+
+                $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
+                $hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
+                $minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT);
+                $moreThan8 = 0;
+            }
+        } else {
+            $etime = explode(':', $request->time);
+            $stime = explode(':', $task->startTime);
+
+            $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
+            $hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
+            $minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT);
+            $moreThan8 = 0;
+        }
+        
+         
         $task->comment = $request->taskComment;
         $task->status = $request->taskStatus;
-        $task->endTime = $request->time;
-
-        $etime = explode(':', $request->time);
-        $stime = explode(':', $task->startTime);
-        $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
-
-        $task->hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
-        $task->minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT);
+        $task->endTime = $endTimeFormatted;
+        $task->is_more_than_8 = $moreThan8;
+        $task->end_updated_time = $request->time;
+        $task->hours = $hours;
+        $task->minutes = $minutes;
         $task->save();
 
         return ['status' => true];
