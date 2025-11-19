@@ -13,6 +13,7 @@ use App\Project;
 use App\CfgActivity;
 use App\CfgDesignations;
 use App\CfgTaskStatus;
+use App\InternTask;
 use Illuminate\Http\Request;
 use View;
 use Response;
@@ -38,12 +39,20 @@ class ReportController extends Controller
 
             $employee = Employee::where('empId', Auth::user()->empId)->first();
         }
+        $isIntern = 0;
+        if($request->has('employee'))
+        {
+            $employee = Employee::where('id', $request->employee)->first();
+             $isIntern = $employee->user->type === 'intern';
+        }
 
+       
+         $tasks = $isIntern ? InternTask::orderby('id', 'desc') : Task::orderby('id', 'desc');
 
-        $tasks = Task::orderby('id', 'desc');
-        if ($request->project != null) {
-            $tasks = Task::Where('projectId', $request->project);
+         if ($request->project != null) {
+             $tasks =  $isIntern ? InternTask::Where('projectId', $request->project) : Task::Where('projectId', $request->project);
 
+ 
         }
 
         if ($request->activity != null) {
@@ -72,10 +81,10 @@ class ReportController extends Controller
             $tasks = $tasks->Where('takenDate', $request->takenDate);
 
         }
-        if ($request->takenDate == null && $request->fromDate == null && $request->toDate == null) {
-            $tasks = $tasks->Where('takenDate', date('Y-m-d'));
+        // if ($request->takenDate == null && $request->fromDate == null && $request->toDate == null) {
+        //     $tasks = $tasks->Where('takenDate', date('Y-m-d'));
 
-        }
+        // }
 
         if ($request->fromDate != null) {
             $tasks = $tasks->Where('takenDate', '>=', $request->fromDate);
