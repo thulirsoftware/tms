@@ -180,7 +180,16 @@ function Delete(id)
           success:function(data){
             console.log(data);
             location.reload(); 
-         } 
+         },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }  
        });
 }
 

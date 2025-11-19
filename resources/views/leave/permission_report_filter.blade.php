@@ -69,10 +69,15 @@
                     alert('Failed! ' + (response.message || ''));
                 }
             },
-            error: function (err) {
-                console.error(err);
-                alert('Error occurred!');
-            }
+            error: function (xhr, status, error) {
+                if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            } 
         });
     }
 </script>

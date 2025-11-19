@@ -224,7 +224,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             }
             function stopTime(leaveId) {
@@ -264,7 +272,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             }
             function approveTask(leaveId) {
@@ -288,7 +304,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             }
 
@@ -312,7 +336,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             }
 
@@ -338,7 +370,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             }
 
@@ -364,7 +404,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             }
 
@@ -388,7 +436,15 @@
                     data: { empId: empId, noOfMonth: noOfMonth }
                 }).done(function (data) {
                     console.log(data);
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
 
             });
             function approvePermission(permissionId) {
@@ -408,7 +464,15 @@
                     } else {
                         alert('Try Again!');
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
             }
 
             function declinePermission(permissionId) {
@@ -428,7 +492,15 @@
                     } else {
                         alert('Try Again!');
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
             }
 
 

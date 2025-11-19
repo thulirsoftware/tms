@@ -16,7 +16,7 @@ class InternTask extends Model
     protected $fillable = [
         'assignedDate', 'takenDate', 'assignedBy', 'relatedTaskId', 
         'empId', 'projectId', 'activityId', 'instruction', 
-        'priority', 'comment', 'startTime', 'endTime', 'approval', 'status'
+        'priority', 'comment', 'startTime', 'endTime','is_more_than_8','end_updated_time', 'approval', 'status'
     ];
 
     // Define the attributes that should be hidden for arrays

@@ -158,7 +158,16 @@ function filter()
           window.location.reload();
           
 
-         } 
+         },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }  
        });
 }
 function filterLoad()
@@ -173,7 +182,16 @@ function filterLoad()
           data : {'filterText':value,'search':'Y','domain':domain,'segment':segment},
           success:function(data){
             
-         } 
+         },
+        error: function (xhr, status, error) {
+            if (xhr.status === 419) {
+                alert('CSRF token mismatch');
+                location.reload(true);
+            } else {
+                console.error("Error: " + error);
+                alert('An error occurred. Please try again later.');
+            }
+        }  
        });
 }
 

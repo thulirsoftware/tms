@@ -158,7 +158,16 @@
                 data: { employee, period, fromDate, toDate },
                 success: function (response) {
                     $('#reportTable').html(response);
-                }
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
+                    }
+                } 
             });
         }
 
@@ -247,7 +256,16 @@
                 data: { employee: employee, period: period },
                 success: function (response) {
                     $('#reportTable').html(response);
-                }
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
+                    }
+                } 
             });
         }
 

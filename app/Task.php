@@ -20,7 +20,7 @@ class Task extends Model
      *
      * @var array
      */
-    protected $fillable = ['assignedDate','takenDate','assignedBy','relatedTaskId','empId','projectId','activityId','instruction','priority','comment','startTime','endTime','approval','status'];
+    protected $fillable = ['assignedDate','takenDate','assignedBy','relatedTaskId','empId','projectId','activityId','instruction','priority','comment','startTime','endTime','is_more_than_8','end_updated_time', 'approval','status'];
 
     protected $table = 'tasks';
 
@@ -53,7 +53,7 @@ class Task extends Model
 
     public static function getCurrentTasks($empId)
     {
-        $currentTask = Task::where('status',2)->where('takenDate',date('Y-m-d'))->where('empId',$empId)->get();
+        $currentTask = Task::where('status',2)->where('empId',$empId)->orderby('id','desc')->limit(1)->get();
         return $currentTask;
     }
 

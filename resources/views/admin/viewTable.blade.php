@@ -114,7 +114,16 @@ function startTime(taskId) {
                     alert('Try Again!');
                     location.reload(true);
                 } 
-             }); 
+             }).fail(function(xhr, status, error) {
+                // Handle the error (e.g., CSRF token mismatch or other issues)
+                if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }); 
    
 }
 function stopTime(taskId) {
@@ -156,7 +165,16 @@ function stopTime(taskId) {
                     alert('Try Again!');
                     location.reload(true);
                 } 
-             }); 
+             }).fail(function(xhr, status, error) {
+                // Handle the error (e.g., CSRF token mismatch or other issues)
+                if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }); 
    
 }
 function approveTask(taskId) {
@@ -181,7 +199,16 @@ function approveTask(taskId) {
                     alert('Try Again!');
                     location.reload(true);
                 } 
-             }); 
+             }).fail(function(xhr, status, error) {
+                // Handle the error (e.g., CSRF token mismatch or other issues)
+                if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }); 
    
 }
 
@@ -207,7 +234,16 @@ function declineTask(taskId) {
                     alert('Try Again!');
                     location.reload(true);
                 } 
-             }); 
+             }).fail(function(xhr, status, error) {
+                // Handle the error (e.g., CSRF token mismatch or other issues)
+                if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }); 
    
 }
 
@@ -234,7 +270,15 @@ function setInterrupt(interruptFor) {
                     alert('Try Again!');
                     location.reload(true);
                 } 
-             }); 
+             }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }); 
    
 }
 

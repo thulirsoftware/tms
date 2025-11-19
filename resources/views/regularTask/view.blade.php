@@ -303,7 +303,15 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
-                });
+                }).fail(function(xhr, status, error) {
+                 if (xhr.status === 419) {
+                    alert('CSRF token mismatch');
+                    location.reload(true);
+                } else {
+                    console.error("Error: " + error);
+                    alert('An error occurred. Please try again later.');
+                }
+            });
             }
 
             function stopTime(taskId) {
@@ -355,6 +363,14 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
+                }).fail(function(xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
+                    }
                 });
             }
 
@@ -377,6 +393,14 @@
                     else {
                         alert('Try Again!');
                         location.reload(true);
+                    }
+                }).fail(function(xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
                     }
                 });
 
@@ -402,6 +426,14 @@
                         alert('Try Again!');
                         location.reload(true);
                     }
+                }).fail(function(xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
+                    }
                 });
 
             }
@@ -426,6 +458,14 @@
                     else {
                         alert('Try Again!');
                         location.reload(true);
+                    }
+                }).fail(function(xhr, status, error) {
+                    if (xhr.status === 419) {
+                        alert('CSRF token mismatch');
+                        location.reload(true);
+                    } else {
+                        console.error("Error: " + error);
+                        alert('An error occurred. Please try again later.');
                     }
                 });
 
