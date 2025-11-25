@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Role;
-use Auth;
-use App\Employee;
+ use App\Employee;
 use App\User;
 use App\CfgDesignations;
 use Hash;
 use Illuminate\Http\Request;
 use App\EmployeesLeave;
+use  Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
@@ -32,8 +32,8 @@ class EmployeeController extends Controller
     {
         // Fetch designations
         $designations = CfgDesignations::getDesignation();
-
-        if (Auth::user()->type == "admin" || Auth::user()->hasPermission('Employees')) {
+      
+        if (Auth::user()->type == "admin") {
             // Fetch employees with null empStatus
             $employees = Employee::where('empStatus', null)
                 ->whereHas('user', function ($q) {
@@ -58,9 +58,27 @@ class EmployeeController extends Controller
     public function employeeIndex()
     {
         $designations = CfgDesignations::getDesignation();
+        if (Auth::user()->type == "admin") {
+            // Fetch employees with null empStatus
+            $employees = Employee::where('empStatus', null)
+                ->whereHas('user', function ($q) {
+                    $q->where('type', 'employee'); // only real employees
+                })
+                ->get();
+            // Fetch interns
+            $interns = User::where('type', 'intern')
+                ->whereHas('employee', function ($query) {
+                    $query->where('empStatus', null);
+                })
+                ->get();
 
-        $employee = Auth::user()->employee;
-        return view('employee.index', compact('designations', 'employee'));
+            // Pass both employees and interns to the view
+            return view('admin.employee.index', compact('employees', 'designations', 'interns'));
+        } else {
+            // For non-admin users, fetch only their employee record
+            $employee = Auth::user()->employee;
+            return view('employee.index', compact('designations', 'employee'));
+        }
     }
 
 
@@ -179,12 +197,17 @@ class EmployeeController extends Controller
 
         if ($employee = Employee::find($employee->id)) {
             $designation = CfgDesignations::getDesignation();
-            $roles = Role::pluck('name', 'id'); // Add this line to fetch roles
+           $roles = Role::pluck('name', 'id'); // Add this line to fetch roles
 
+            $update_label = 'Employee';
+            if($employee->user()->first() != 'null'){
+                $update_label = ucfirst($employee->user()->first()->type);
+            }
+                 
             if (Auth::user()->type == 'admin' || Auth::user()->hasPermission('Employees')) {
-                return view('admin.employee.edit', compact('employee', 'designation', 'roles'));
+                return view('admin.employee.edit', compact('update_label','employee', 'designation', 'roles'));
             } else {
-                return view('employee.edit', compact('employee', 'designation', 'roles'));
+                return view('employee.edit', compact('update_label','employee', 'designation', 'roles'));
             }
         }
     }
