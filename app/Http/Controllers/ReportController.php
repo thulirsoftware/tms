@@ -40,7 +40,7 @@ class ReportController extends Controller
             $employee = Employee::where('empId', Auth::user()->empId)->first();
         }
         $isIntern = 0;
-        if($request->has('employee'))
+        if($request->has('employee') && $request->employee != null)
         {
             $employee = Employee::where('id', $request->employee)->first();
              $isIntern = $employee->user->type === 'intern';

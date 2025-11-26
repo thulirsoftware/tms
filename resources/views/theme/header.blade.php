@@ -137,7 +137,7 @@ function time_since($since)
             <li><a href="{{ route('Employee') }}"><i class="fa fa-user fa-fw"></i> Profile</a>
             </li>
             @if(Auth::user()->type == 'admin')
-                <li><a href="{{ route('register') }}"><i class="fa fa-user fa-fw"></i>Add Admin</a></li>
+                <!-- <li><a href="{{ route('register') }}"><i class="fa fa-user fa-fw"></i>Add Admin</a></li> -->
             @endif
             <li class="divider"></li>
             <li>
