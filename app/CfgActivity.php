@@ -37,9 +37,15 @@ class CfgActivity extends Model
         else
         {
             $findEmployee=Employee::find($employee);
-            $employeeDesignation=CfgDesignations::find($findEmployee->designation);
-            $activities = CfgActivity::where('isVisible','yes')->whereIn('type',[$employeeDesignation->type,'ALL'])->orderBy('name','asc')->get()->toArray();
-        }
+             $employeeDesignation=CfgDesignations::where('id',$findEmployee->designation)->first();
+           
+            if(!$employeeDesignation){
+                $activities = CfgActivity::where('isVisible','yes')->orderBy('name','asc')->get()->toArray();
+            }
+            else{
+                $activities = CfgActivity::where('isVisible','yes')->where('type',$employeeDesignation->type)->orderBy('name','asc')->get()->toArray();
+            }
+         }
     	
         $selectedValue=array();
         foreach ($activities as $item)

@@ -30,8 +30,15 @@ class ReportController extends Controller
 
         $designations = CfgDesignations::getDesignation();
         $projects = Project::getProjects();
-        $activities = CfgActivity::getActivities();
-        $taskStatus = CfgTaskStatus::getStatusList();
+         $selected_employee_id = '';
+         if($request->has('employee') && $request->employee != null)
+        {
+            $employee_data = Employee::where('id', $request->employee)
+            ->first();
+            $selected_employee_id = $employee_data->id;    
+        }
+        $activities = CfgActivity::getActivities($selected_employee_id);
+         $taskStatus = CfgTaskStatus::getStatusList();
         $priorities = Task::getTaskPriorities();
 
         $employees = Employee::getEmployeeList();
@@ -40,6 +47,7 @@ class ReportController extends Controller
             $employee = Employee::where('empId', Auth::user()->empId)->first();
         }
         $isIntern = 0;
+        $employee = null;
         if($request->has('employee') && $request->employee != null)
         {
             $employee = Employee::where('id', $request->employee)->first();
@@ -47,7 +55,7 @@ class ReportController extends Controller
         }
 
        
-         $tasks = $isIntern ? InternTask::orderby('id', 'desc') : Task::orderby('id', 'desc');
+         $tasks = $isIntern ? InternTask::orderby('takenDate', 'asc') : Task::orderby('takenDate', 'asc');
 
          if ($request->project != null) {
              $tasks =  $isIntern ? InternTask::Where('projectId', $request->project) : Task::Where('projectId', $request->project);
@@ -101,14 +109,14 @@ class ReportController extends Controller
 
         }
 
-        $tasks = $tasks->orderBy('startTime', 'ASC')->get();
+        $tasks = $tasks->get();
         foreach ($tasks as $key => $task) {
             if (Task::where('relatedTaskId', $task->relatedTaskId)->where('status', 4)->count() > 0) {
                 $tasks[$key]['flag'] = "Finished";
 
             }
         }
-        return view('report.taskReport', compact('employees', 'designations', 'projects', 'activities', 'taskStatus', 'priorities', 'tasks'));
+        return view('report.taskReport', compact('employee','employees', 'designations', 'projects', 'activities', 'taskStatus', 'priorities', 'tasks'));
 
     }
     public function employeeReport(Request $request)

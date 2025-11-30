@@ -28,11 +28,11 @@ class EmployeeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         // Fetch designations
         $designations = CfgDesignations::getDesignation();
-      
+        $default_nav = 'employees';
         if (Auth::user()->type == "admin") {
             // Fetch employees with null empStatus
             $employees = Employee::where('empStatus', null)
@@ -46,9 +46,11 @@ class EmployeeController extends Controller
                     $query->where('empStatus', null);
                 })
                 ->get();
-
+            if($request->has('redirected_nav') && !empty($request->get('redirected_nav'))){
+                $default_nav = $request->get('redirected_nav');
+            }
             // Pass both employees and interns to the view
-            return view('admin.employee.index', compact('employees', 'designations', 'interns'));
+            return view('admin.employee.index', compact('employees', 'default_nav','designations', 'interns'));
         } else {
             // For non-admin users, fetch only their employee record
             $employee = Auth::user()->employee;
@@ -151,7 +153,12 @@ class EmployeeController extends Controller
             if (Auth::user()->type == 'admin' || Auth::user()->hasPermission('Employees')) {
                 if ($employee->email != Auth::user()->email) {
                     // Assigned to someone else
-                    return redirect('/Admin/Employee')->with('success', 'Employee Added successfully.');
+                    if($request->expLevel == '2'){
+                        return redirect('/Admin/Employee?redirected_nav=interns')->with('success', 'Employee Added successfully.');
+                    } else {
+                      return redirect('/Admin/Employee?redirected_nav=employees')->with('success', 'Employee Added successfully.');
+
+                    }
                 } else {
                     // Assigned to themselves
                     return redirect('/Employee')->with('success', 'Employee Added successfully.');
@@ -283,7 +290,7 @@ class EmployeeController extends Controller
             'bankBranch' => $validatedData['bankBranch']
         ]);
         $employee->save();
-
+        $expLevel = $employee->expLevel;
         // Update user's email if provided
         if (!empty($validatedData['email']) && $employee->user) {
             $employee->user->email = $validatedData['email'];
@@ -303,7 +310,12 @@ class EmployeeController extends Controller
         if (Auth::user()->type == 'admin' || Auth::user()->hasPermission('Employees')) {
             if ($employee->email != Auth::user()->email) {
                 // Assigned to someone else
-                return redirect('/Admin/Employee')->with('success', 'Employee updated successfully.');
+                  if($expLevel == '2'){
+                        return redirect('/Admin/Employee?redirected_nav=interns')->with('success', 'Employee updated successfully.');
+                    } else {
+                      return redirect('/Admin/Employee?redirected_nav=employees')->with('success', 'Employee updated successfully.');
+
+                    }
             } else {
                 // Assigned to themselves
                 return redirect('/Employee')->with('success', 'Employee updated successfully.');
@@ -328,7 +340,8 @@ class EmployeeController extends Controller
     public function destroy(Employee $employee)
     {
         $employee = Employee::find($employee->id);
-
+      
+        $expLevel = $employee->expLevel;
         if ($employee) {
             $user = User::where('empId', $employee->empId)->first();
             if ($user) {
@@ -340,7 +353,12 @@ class EmployeeController extends Controller
         if (Auth::user()->type == 'admin' || Auth::user()->hasPermission('Employees')) {
             if ($employee->email != Auth::user()->email) {
                 // Assigned to someone else
-                return redirect('/Admin/Employee')->with('success', 'Employee deleted successfully.');
+                 if($expLevel == '2'){
+                        return redirect('/Admin/Employee?redirected_nav=interns')->with('success', 'Employee deleted successfully.');
+                    } else {
+                      return redirect('/Admin/Employee?redirected_nav=employees')->with('success', 'Employee deleted successfully.');
+
+                    }
             } else {
                 // Assigned to themselves
                 return redirect('/Employee')->with('success', 'Employee deleted successfully.');

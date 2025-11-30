@@ -70,6 +70,8 @@ class RegisterController extends Controller
         ]);
         $user->empId=$user->type.$user->id;
         $user->save();
+        $user->roles()->attach(8);
+
         return $user;
     }
 }
