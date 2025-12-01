@@ -61,12 +61,13 @@ class LeaveController extends Controller
             }
         }
         $permissions = $permissionsQuery->take(25)->get();
-
+        $active_tab = $request->active_tab ?? 'leave';
 
         return view('leave.index', [
             'leave' => $leaves,
             'permissions' => $permissions,
-            'employees' => $employees
+            'employees' => $employees,
+            'active_tab' => $active_tab
         ]);
     }
 

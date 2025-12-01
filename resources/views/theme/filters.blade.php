@@ -23,7 +23,7 @@
                 $activities = collect(App\CfgActivity::getActivities(isset($employee->id) ? $employee->id : ''))
                 ->unique()
                 ->toArray();
-                  ?>
+                   ?>
                @foreach($activities as $key => $activity)
                
                <option value="{{$key}}"<?=($key==request()->get('activity'))?'selected':''?>>{{$activity}}</option>

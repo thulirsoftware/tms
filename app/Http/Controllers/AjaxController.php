@@ -562,7 +562,7 @@ class AjaxController extends Controller
             $extraLeave = EmployeesLeave::where('empId', $request->empId)->first();
             $data = $extraLeave['al'] + 1;
 
-            $leave = DB::table('employeesLeave')->where('empId', $request->empId)->update(['al' => $data]);
+            $leave = DB::table('employeesleave')->where('empId', $request->empId)->update(['al' => $data]);
             return ['status' => true, $leave];
 
         } else {
@@ -579,7 +579,7 @@ class AjaxController extends Controller
 
             $data = $extraLeave['al'] - 1;
 
-            $leave = DB::table('employeesLeave')->where('empId', $request->empId)->update(['al' => $data]);
+            $leave = DB::table('employeesleave')->where('empId', $request->empId)->update(['al' => $data]);
             return ['status' => true, $leave];
 
         } else {
@@ -592,7 +592,7 @@ class AjaxController extends Controller
     {
         if ($request->empId != '' && $request->noOfMonth != '') {
 
-            $leave = DB::table('employeesLeave')->where('empId', $request->empId)->update([
+            $leave = DB::table('employeesleave')->where('empId', $request->empId)->update([
                 'el' => $request->noOfMonth,
             ]);
             return ['status' => true, $leave];

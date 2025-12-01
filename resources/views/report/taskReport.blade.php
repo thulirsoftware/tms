@@ -27,6 +27,7 @@
                         <th>Start Time</th>
                         <th>End Time</th>
                         <th>HH:MM</th>
+                         <th>Total Hours</th>
                         <th>Current Status</th>
                     </tr>
                 </thead>
@@ -41,11 +42,50 @@
     $todayTotalHours = 0; 
     $todayTotalMinutes = 0;
     $sumMinutes = 0;?>
-                    @foreach($tasks as $key => $task)
+    @php
+$groupedTasks = $tasks->groupBy(function($task) {
+    return date('Y-m-d', strtotime($task->takenDate));
+});
+@endphp
+@foreach($groupedTasks as $date => $dayTasks)
+
+    @php
+          $rowCount = count($dayTasks);
+        $totalHours = 0;
+        $totalMinutes = 0;
+        $rowIndex = 0;
+          foreach($dayTasks as $key => $task)
+          {
+               $hours = (int)($task->hours ?? 0);
+                $minutes = (int)($task->minutes ?? 0);
+                $totalHours += $hours;
+                $totalMinutes += $minutes;
+          }
+
+              
+           
+                
+        
+    @endphp
+     @php
+                    $totalHours += intdiv($totalMinutes, 60);
+                    $totalMinutes = $totalMinutes % 60;
+                @endphp
+        @foreach($dayTasks as $key => $task)
+                   @php
+            $hours = (int)($task->hours ?? 0);
+            $minutes = (int)($task->minutes ?? 0);
+          
+         @endphp
+          
                                     <tr>
 
                                         <td>{{date('M-d', strtotime($task->assignedDate))}}</td>
-                                        <td>{{date('M-d', strtotime($task->takenDate))}}</td>
+                                         @if($key == 0)
+                                            <td rowspan="{{ $rowCount }}" class="align-top fw-bold" style="vertical-align: middle;">
+                                                {{ date('M d', strtotime($date)) }}
+                                            </td>
+                                        @endif
                                         <td>
                                             @if($task->employee)
                                                 {{ $task->employee->name ?? '-' }}
@@ -89,7 +129,17 @@
                                                                                                                                                                 ?>
                                                         <td>{{$task->hours}}:{{$task->minutes}}</td>
                                         @endif
+                     @if($key == 0)
+            
+                <td class="fw-bold text-primary"  rowspan="{{ $rowCount }}"  style="vertical-align: middle;">
+                    {{ $totalHours }} hours {{ str_pad($totalMinutes, 2, '0', STR_PAD_LEFT) }} minutes
+                </td>
+                @endif
+              
+              
+       
                                         <td>
+      
                                             @if(isset($task->state) && isset($task->state->name))
                                                 {{$task->state->name}}
                                             @else
@@ -105,8 +155,9 @@
                                         </td>
 
                                     </tr>
+                                      @php $rowIndex++; @endphp
                                     <?php 
-                                                                                            if ($task->activityId == '1')//For Lunch Time
+                            if ($task->activityId == '1')//For Lunch Time
                         {
                             $todayLunchHours += $task->hours;
                             $sumLunchMins += $task->minutes;
@@ -151,7 +202,8 @@
                         }
                                                                                             ?>
                     @endforeach
-
+                   
+  @endforeach
                 </tbody>
                 <tr>
 

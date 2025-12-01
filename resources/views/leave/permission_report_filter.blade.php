@@ -64,7 +64,9 @@
                         ? 'Permission request has been rejected!'
                         : 'Permission request approved!';
                     alert(message);
-                    location.reload();
+                     let url = new URL(window.location.href);
+                    url.searchParams.set('active_tab', 'permissions'); 
+                     window.location.href = url.toString();
                 } else {
                     alert('Failed! ' + (response.message || ''));
                 }
@@ -72,7 +74,9 @@
             error: function (xhr, status, error) {
                 if (xhr.status === 419) {
                     alert('CSRF token mismatch');
-                    location.reload(true);
+                     let url = new URL(window.location.href);
+                    url.searchParams.set('active_tab', 'leave'); 
+                     window.location.href = url.toString();
                 } else {
                     console.error("Error: " + error);
                     alert('An error occurred. Please try again later.');

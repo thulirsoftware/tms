@@ -66,6 +66,9 @@
   color:#5bc0de;
   font-size: 22px;
 }
+body {
+    font-family: Arial, sans-serif !important;
+}
 </style>
 <body>
 
