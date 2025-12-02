@@ -69,6 +69,9 @@
 body {
     font-family: Arial, sans-serif !important;
 }
+table {
+    font-family: Arial, sans-serif !important;
+}
 </style>
 <body>
 
@@ -151,14 +154,15 @@ body {
 <script type="text/javascript">
 
 $(document).ready(function(){
- //setTimeout(checkNewNotification,5000);
+  setTimeout(checkNewNotification,5000);
 });
 
    function checkNewNotification() { 
 
       $.ajax({
-      url: "{{ route('SetStartTime') }}",
+      url: "{{ route('CheckNewNotification') }}",
       type: 'get',
+      
       success: function(data){
                if(data.status==true)
                     {
@@ -196,7 +200,7 @@ $(document).ready(function(){
 
 
       $('#taskNotify').click(function(){
-        $.get('/MarkAsRead');
+        //$.get('/MarkAsRead');
       });
       // $('#taskNotify').click(function(){
       //     $.get("{{ route('MarkAsRead') }}", function(data) {

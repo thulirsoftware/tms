@@ -9,13 +9,13 @@
                     @if(Auth::user()->type == "admin")
                         <!---<button class="btn btn-info"  ><i class="fa fa-minus"></i> Leave</button>&nbsp<button class="btn btn-info" ><i class="fa fa-plus"></i> Leave </button>-->
                     @endif
-                    @if(Auth::user()->type != "admin")
+                    @if (in_array(Auth::user()->type, ['employee', 'intern'])) 
                         <a href="{{url('/Leave-permission')}}/{{$employee->id}}/create-permission"
                             class="btn btn-info btn-rounded"><i class="fa fa-plus" aria-hidden="true"
                                 onclick="permissionLeave({{$employee->id}})"></i>Permission</a>
                     @endif
 
-                    @if(Auth::user()->type != "admin")
+                   @if (in_array(Auth::user()->type, ['employee', 'intern'])) 
                         <a href="{{url('/Leave')}}/{{$employee->id}}/create" class="btn btn-info btn-rounded"><i
                                 class="fa fa-plus" aria-hidden="true" onclick="casualLeave({{$employee->id}})"></i> Leave
                             Request</a>

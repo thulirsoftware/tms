@@ -15,8 +15,13 @@ use App\CfgTaskStatus;
 use App\CfgLeaveType;
 use Illuminate\Http\Request;
 use App\EmployeesLeave;
+use App\Notifications\ApproveReminder;
+use App\Notifications\DeclinedReminder;
 use DB;
 use Carbon\Carbon;
+use App\Notifications\LeaveReminder;
+use App\Notifications\PermissionReminder;
+use App\User;
 
 class LeaveController extends Controller
 {
@@ -165,7 +170,44 @@ class LeaveController extends Controller
         if (!$leave->exists) {
             $request['empId'] = Employee::where('empId', Auth::user()->empId)->first()->id;
             // dd($request->all());
-            $leave = Leave::create($request->all());
+           
+
+            $users = User::where('empId', '!=',Auth::user()->empId)
+           ->get();
+             $leave = Leave::create($request->all());
+            
+            foreach ($users as $user) {
+                if($user->type =='admin')
+                {
+                     $employee_get = Employee::find($user->empId);
+                    $user->notify(new LeaveReminder($leave, $employee_get, 'Leave request alert'));
+                }
+                else{
+                    if($user->hasRole('Manager'))
+                    {
+                            $employee_get = Employee::find($user->empId);
+                            $user->notify(new LeaveReminder($leave, $employee_get, 'Leave request alert'));
+                    }
+                     if($user->hasRole('Reporting Manager'))
+                    {
+                            $employee_get = Employee::find($user->empId);
+                            $user->notify(new LeaveReminder($leave, $employee_get, 'Leave request alert'));
+                    }
+                     if($user->hasRole('Team Lead'))
+                    {
+                            $employee_get = Employee::find($user->empId);
+                            $user->notify(new LeaveReminder($leave, $employee_get, 'Leave request alert'));
+                    }
+                     if($user->hasRole('Admin'))
+                    {
+                            $employee_get = Employee::find($user->empId);
+                            $user->notify(new LeaveReminder($leave, $employee_get, 'Leave request alert'));
+                    }
+                }
+                 
+               
+            }
+            
             session()->flash('success', 'Leave Request Sent Succesfully');
         } else {
             session()->flash('success', 'Leave Request Failed');
@@ -189,7 +231,7 @@ class LeaveController extends Controller
         $to = strtotime($request->toTime);
         $hours = round(($to - $from) / 3600, 2);
 
-        LeavePermission::create([
+        $leave = LeavePermission::create([
             'empId' => Auth::user()->empId,
             'name' => Auth::user()->name,
             'email' => Auth::user()->email,
@@ -201,6 +243,40 @@ class LeaveController extends Controller
             'reason' => $request->reason,
             'approval' => 'pending',
         ]);
+
+         $users = User::where('empId', '!=',Auth::user()->empId)
+           ->get();
+             
+            foreach ($users as $user) {
+                if($user->type =='admin')
+                {
+                        $employee_get = Employee::find($user->empId);
+                        $user->notify(new PermissionReminder($leave, $employee_get, 'Permission request alert'));
+                }
+                else{
+                    if($user->hasRole('Manager'))
+                    {
+                             $employee_get = Employee::find($user->empId);
+                        $user->notify(new PermissionReminder($leave, $employee_get, 'Permission request alert'));
+                    }
+                     if($user->hasRole('Reporting Manager'))
+                    {
+                           $employee_get = Employee::find($user->empId);
+                        $user->notify(new PermissionReminder($leave, $employee_get, 'Permission request alert'));
+                    }
+                     if($user->hasRole('Team Lead'))
+                    {
+                            $employee_get = Employee::find($user->empId);
+                        $user->notify(new PermissionReminder($leave, $employee_get, 'Permission request alert'));
+                    }
+                     if($user->hasRole('Admin'))
+                    {
+                            $employee_get = Employee::find($user->empId);
+                        $user->notify(new PermissionReminder($leave, $employee_get, 'Permission request alert'));
+                    }
+                }
+            }
+
 
         return redirect()->route('leave_show', ['employee' => $employee->id])->with('success', 'Permission request submitted successfully!');
     }
@@ -349,6 +425,17 @@ class LeaveController extends Controller
         if ($permission) {
             $permission->approval = 'yes';
             $permission->save();
+           
+               $user = User::where('empId', $permission->empId)
+                ->first();
+                
+              $employee = Employee::where('empId',$user->empId)->first();
+ 
+                 
+            $user->notify(new ApproveReminder($permission, $employee, 'Permission approved'));
+           
+              
+
             return response()->json(['status' => true]);
         }
         return response()->json(['status' => false]);
@@ -360,6 +447,16 @@ class LeaveController extends Controller
         if ($permission) {
             $permission->approval = 'no';
             $permission->save();
+
+            
+           $user = User::where('empId', $permission->empId)
+                ->first();
+                
+              $employee = Employee::where('empId',$user->empId)->first();
+ 
+            $user->notify(new DeclinedReminder($permission, $employee, 'Permission declined'));
+           
+
             return response()->json(['status' => true]);
         }
         return response()->json(['status' => false]);
