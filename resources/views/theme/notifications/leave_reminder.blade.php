@@ -1,11 +1,4 @@
  
-@if(Auth::user()->type=='admin')
-<a href="{{url('/Admin/Leave')}}"><i class="fa fa-paper-plane" aria-hidden="true"></i>
-
-@else
-<a href="{{url('/Leaverequest')}}"><i class="fa fa-paper-plane" aria-hidden="true"></i>
-
-@endif
 
 <p>{{$notification->data['message']}} : {{$notification->data['fromUser']['name']}} has <br> requested leave from  
 {{$notification->data['leave']['leaveFromDate']}} <br> to  {{$notification->data['leave']['leaveToDate']}} .
