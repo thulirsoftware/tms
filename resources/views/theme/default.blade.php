@@ -81,9 +81,14 @@ table {
     border-bottom: 2px dotted #dadada;
     margin-bottom: 10px;
 }
-.dropdown-menu .divider
-{
-  display: none !important;
+#taskNotify .divider {
+ 
+    display: none !important;
+ 
+}
+ul.dropdown-menu.dropdown-tasks {
+    overflow-y: scroll;
+    height: 300px;
 }
 </style>
 <body>
