@@ -72,6 +72,19 @@ body {
 table {
     font-family: Arial, sans-serif !important;
 }
+.dropdown-tasks{
+      padding-left: 10px;
+    padding-right: 10px;
+}
+#taskNotify li:nth-child(n+3) {
+    padding-bottom: 10px;
+    border-bottom: 2px dotted #dadada;
+    margin-bottom: 10px;
+}
+.dropdown-menu .divider
+{
+  display: none !important;
+}
 </style>
 <body>
 
