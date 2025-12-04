@@ -69,6 +69,27 @@
 body {
     font-family: Arial, sans-serif !important;
 }
+table {
+    font-family: Arial, sans-serif !important;
+}
+.dropdown-tasks{
+      padding-left: 10px;
+    padding-right: 10px;
+}
+#taskNotify li:nth-child(n+3) {
+    padding-bottom: 10px;
+    border-bottom: 2px dotted #dadada;
+    margin-bottom: 10px;
+}
+#taskNotify .divider {
+ 
+    display: none !important;
+ 
+}
+ul.dropdown-menu.dropdown-tasks {
+    overflow-y: scroll;
+    height: 300px;
+}
 </style>
 <body>
 
@@ -151,14 +172,15 @@ body {
 <script type="text/javascript">
 
 $(document).ready(function(){
- //setTimeout(checkNewNotification,5000);
+  setTimeout(checkNewNotification,5000);
 });
 
    function checkNewNotification() { 
 
       $.ajax({
-      url: "{{ route('SetStartTime') }}",
+      url: "{{ route('CheckNewNotification') }}",
       type: 'get',
+      
       success: function(data){
                if(data.status==true)
                     {
@@ -196,7 +218,7 @@ $(document).ready(function(){
 
 
       $('#taskNotify').click(function(){
-        $.get('/MarkAsRead');
+        //$.get('/MarkAsRead');
       });
       // $('#taskNotify').click(function(){
       //     $.get("{{ route('MarkAsRead') }}", function(data) {

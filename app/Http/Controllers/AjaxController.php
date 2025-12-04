@@ -17,6 +17,9 @@ use App\CfgTaskStatus;
 use Illuminate\Http\Request;
 use App\Leave;
 use App\EmployeesLeave;
+use App\Notifications\ApproveReminder;
+use App\Notifications\DeclinedReminder;
+use App\Notifications\LeaveReminder;
 use DB;
 
 use App\Notifications\TaskReminder;
@@ -455,7 +458,7 @@ class AjaxController extends Controller
     public function checkNewNotification(Request $request)
     {
         $oldCount = Session::get('notificationCount');
-
+        
         if (count(Auth::user()->unreadNotifications) > 0 && $oldCount < count(Auth::user()->unreadNotifications)) {
             Session::put('notificationCount', count(Auth::user()->unreadNotifications));
             return ['status' => true, 'count' => count(Auth::user()->unreadNotifications), 'list' => Auth::user()->unreadNotifications];
@@ -501,6 +504,29 @@ class AjaxController extends Controller
                     $takenleave->save();
                 }
 
+                if($request->status == 'yes'){
+                    $employee = Employee::find($request->empId);
+
+                    $user = User::where('empId', $employee->empId)
+                    ->first();
+
+                 
+                    $user->notify(new ApproveReminder($leave, $employee, 'Leave approved'));
+           
+                }
+                 if($request->status != 'yes'){
+                     $employee = Employee::find($request->empId);
+
+                    $user = User::where('empId', $employee->empId)
+                    ->first();
+
+                    $user->notify(new DeclinedReminder($leave, $employee, 'Leave declined'));
+           
+                }
+                
+               
+                
+
                 return ['status' => true, 'leaveId' => $request->leaveId];
             }
         }
@@ -525,7 +551,13 @@ class AjaxController extends Controller
                     $takenleave->taken = $totalTaken;
                     $takenleave->save();
                 }
+                $employee = Employee::find($request->empId);
 
+                    $user = User::where('empId', $employee->empId)
+                ->first();
+
+                $user->notify(new DeclinedReminder($leave, $employee, 'Leave declined'));
+           
                 return ['status' => true, 'leaveId' => $request->leaveId];
             }
         }

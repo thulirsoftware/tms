@@ -334,7 +334,7 @@
       <div class="form-group">
          <div class="col-md-9">
             <a style="margin-left:650px;"
-               href="{{Auth::user()->type == 'admin' ? url('/Admin/Employee') : url('/Employee')}}"
+               href="{{Auth::user()->type == 'admin' ? url('/Admin/Employee?redirected_nav=interns') : url('/Employee')}}"
                class="btn btn-primary">Cancel</a>
          </div>
          <div class=" col-md-1">
