@@ -188,6 +188,7 @@ $(document).ready(function(){
                         $('#taskAlertBell').html(txt);
                         $('#yes-audio').trigger('play');
                      window.setTimeout(function(){
+                      $('#yes-audio').trigger('play');
                      window.location.reload();
                      return false;
                      exit();
