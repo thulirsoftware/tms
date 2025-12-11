@@ -5,9 +5,10 @@
 
     <script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
     <style>
-        .header{
+        .header {
             padding: 10px;
         }
+
         /* --- Layout --- */
         .filter-container {
             display: grid;
@@ -17,11 +18,11 @@
             margin-bottom: 1.5rem;
             padding: 1rem;
             border-radius: 12px;
-        
+
         }
 
 
-        
+
 
         /* --- Buttons --- */
 
@@ -58,7 +59,7 @@
             text-align: right;
             padding: 1rem;
             border-radius: 10px;
-            
+
         }
 
         .total-hours strong {
@@ -139,16 +140,20 @@
     </div>
 
     <script>
-        function fetchReport(period = null) {
-            var employee = $('#employeeFilter').val();
-            var fromDate = $('#fromDate').val();
-            var toDate = $('#toDate').val();
 
-            // If custom date range is chosen, use that
+        // -----------------------------
+        // MAIN FETCH FUNCTION (ONLY ONE)
+        // -----------------------------
+        function fetchReport(period = null) {
+
+            let employee = $('#employeeFilter').val();
+            let fromDate = $('#fromDate').val();
+            let toDate = $('#toDate').val();
+
+            // If custom date range selected
             if (fromDate && toDate) {
                 period = 'custom';
             } else {
-                // otherwise, use active button or default daily
                 period = period || $('.periodBtn.active').data('period') || 'daily';
             }
 
@@ -160,117 +165,64 @@
                     $('#reportTable').html(response);
                 },
                 error: function (xhr, status, error) {
-                    if (xhr.status === 419) {
-                        alert('CSRF token mismatch');
-                        location.reload(true);
-                    } else {
-                        console.error("Error: " + error);
-                        alert('An error occurred. Please try again later.');
-                    }
-                } 
+                    console.error(error);
+                }
             });
         }
 
-        // Period buttons
+
+        // -----------------------------
+        // PERIOD BUTTONS
+        // -----------------------------
         $('.periodBtn').click(function () {
             $('.periodBtn').removeClass('active');
             $(this).addClass('active');
 
-            // Clear custom date range when clicking period buttons
+            // Clear date range
             $('#fromDate').val('');
             $('#toDate').val('');
 
             fetchReport($(this).data('period'));
         });
 
-        // Custom Date Range button
+
+        // -----------------------------
+        // DATE RANGE FILTER
+        // -----------------------------
         $('#dateRangeBtn').click(function () {
-            $('.periodBtn').removeClass('active'); // disable period selection
+            $('.periodBtn').removeClass('active');
             fetchReport('custom');
         });
 
-        // Employee dropdown
+
+        // -----------------------------
+        // EMPLOYEE FILTER
+        // -----------------------------
         $('#employeeFilter').change(function () {
             fetchReport();
         });
 
-        // Default on load
+
+        // -----------------------------
+        // ON PAGE LOAD
+        // -----------------------------
         $(document).ready(function () {
             $('.periodBtn[data-period="daily"]').addClass('active');
             fetchReport('daily');
         });
 
-        // Trigger AJAX when employee changes (keeps current period)
-        $('#employeeFilter').change(function () {
-            var period = $('.periodBtn.active').data('period') || 'daily';
-            fetchReport(period);
-        });
 
-        // Handle period buttons
-        $('.periodBtn').click(function () {
-            $('.periodBtn').removeClass('active');
-            $(this).addClass('active');
-
-            var period = $(this).data('period');
-
-            // Clear date filters if any
-            $('#fromDate').val('');
-            $('#toDate').val('');
-
-            fetchReport(period);
-        });
-
-        // On page load, show Today by default
-        $(document).ready(function () {
-            $('.periodBtn[data-period="daily"]').addClass('active');
-            fetchReport('daily');
-        });
-        // CSV Download button
+        // -----------------------------
+        // EXCEL DOWNLOAD
+        // -----------------------------
         $('#downloadExcel').click(function () {
             var table = document.getElementById('employeeReportTable');
-
             var employeeName = $('#employeeFilter option:selected').text() || 'All';
             var period = $('.periodBtn.active').data('period') || 'daily';
             var filename = employeeName + "_" + period + "_Report.xlsx";
 
             TableToExcel.convert(table, { name: filename, sheet: { name: "Report" } });
         });
-        $('#employeeFilter').change(function () {
-            var period = $('.periodBtn.active').data('period') || 'daily';
-            fetchReport(period);
-        });
-
-        $('.periodBtn').click(function () {
-            $('.periodBtn').removeClass('active');
-            $(this).addClass('active');
-
-            var period = $(this).data('period');
-            fetchReport(period);
-        });
-
-        function fetchReport(period) {
-            var employee = $('#employeeFilter').val();
-            $.ajax({
-                url: "{{ url('Admin/Report/Employee-Report-Ajax') }}",
-                type: "GET",
-                data: { employee: employee, period: period },
-                success: function (response) {
-                    $('#reportTable').html(response);
-                },
-                error: function (xhr, status, error) {
-                    if (xhr.status === 419) {
-                        alert('CSRF token mismatch');
-                        location.reload(true);
-                    } else {
-                        console.error("Error: " + error);
-                        alert('An error occurred. Please try again later.');
-                    }
-                } 
-            });
-        }
-
-
-
 
     </script>
 

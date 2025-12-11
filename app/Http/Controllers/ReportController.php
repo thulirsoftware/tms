@@ -30,15 +30,14 @@ class ReportController extends Controller
 
         $designations = CfgDesignations::getDesignation();
         $projects = Project::getProjects();
-         $selected_employee_id = '';
-         if($request->has('employee') && $request->employee != null)
-        {
+        $selected_employee_id = '';
+        if ($request->has('employee') && $request->employee != null) {
             $employee_data = Employee::where('id', $request->employee)
-            ->first();
-            $selected_employee_id = $employee_data->id;    
+                ->first();
+            $selected_employee_id = $employee_data->id;
         }
         $activities = CfgActivity::getActivities($selected_employee_id);
-         $taskStatus = CfgTaskStatus::getStatusList();
+        $taskStatus = CfgTaskStatus::getStatusList();
         $priorities = Task::getTaskPriorities();
 
         $employees = Employee::getEmployeeList();
@@ -48,19 +47,18 @@ class ReportController extends Controller
         }
         $isIntern = 0;
         $employee = null;
-        if($request->has('employee') && $request->employee != null)
-        {
+        if ($request->has('employee') && $request->employee != null) {
             $employee = Employee::where('id', $request->employee)->first();
-             $isIntern = $employee->user->type === 'intern';
+            $isIntern = $employee->user->type === 'intern';
         }
 
-       
-         $tasks = $isIntern ? InternTask::orderby('takenDate', 'asc') : Task::orderby('takenDate', 'asc');
 
-         if ($request->project != null) {
-             $tasks =  $isIntern ? InternTask::Where('projectId', $request->project) : Task::Where('projectId', $request->project);
+        $tasks = $isIntern ? InternTask::orderby('takenDate', 'asc') : Task::orderby('takenDate', 'asc');
 
- 
+        if ($request->project != null) {
+            $tasks = $isIntern ? InternTask::Where('projectId', $request->project) : Task::Where('projectId', $request->project);
+
+
         }
 
         if ($request->activity != null) {
@@ -116,18 +114,45 @@ class ReportController extends Controller
 
             }
         }
-        return view('report.taskReport', compact('employee','employees', 'designations', 'projects', 'activities', 'taskStatus', 'priorities', 'tasks'));
+        return view('report.taskReport', compact('employee', 'employees', 'designations', 'projects', 'activities', 'taskStatus', 'priorities', 'tasks'));
 
     }
     public function employeeReport(Request $request)
     {
-        $employees = Employee::all(); // For filter dropdown
-        $designations = CfgDesignations::pluck('name', 'id'); // id => name mapping
+        $employees = Employee::all();
+        $designations = CfgDesignations::pluck('name', 'id');
 
         $employeeId = $request->employee;
-        $fromDate = $request->fromDate ?: date('Y-m-d');
-        $toDate = $request->toDate ?: date('Y-m-d');
         $period = $request->period ?? 'daily';
+
+        // -----------------------------
+        // ⭐ FIXED PERIOD DATE LOGIC ⭐
+        // -----------------------------
+
+        if ($period === 'daily') {
+            $fromDate = $toDate = date('Y-m-d');
+        } elseif ($period === 'weekly') {
+            $fromDate = date('Y-m-d', strtotime('monday this week'));
+            $toDate = date('Y-m-d', strtotime('sunday this week'));
+        } elseif ($period === 'monthly') {
+            $fromDate = date('Y-m-01');
+            $toDate = date('Y-m-t');
+        } elseif ($period === 'custom') {
+
+            // Prevent null errors
+            if (!$request->fromDate || !$request->toDate) {
+                return "Custom date range missing!"; // or handle gracefully
+            }
+
+            $fromDate = $request->fromDate;
+            $toDate = $request->toDate;
+        } else {
+            $fromDate = $toDate = date('Y-m-d');
+        }
+
+        // ------------------------------
+        // ⭐ BUILD QUERY WITH DATES ⭐
+        // ------------------------------
 
         $tasksQuery = Task::query();
 
@@ -139,45 +164,56 @@ class ReportController extends Controller
 
         $tasks = $tasksQuery->orderBy('takenDate', 'ASC')->get();
 
-        // Group by employee + date
+        // ------------------------------
+        // ⭐ PROCESS REPORT DATA ⭐
+        // ------------------------------
+
         $reportData = [];
 
         foreach ($tasks as $task) {
             $empKey = $task->empId;
             $dateKey = $task->takenDate;
 
-            if (!isset($reportData[$empKey])) {
-                $reportData[$empKey] = [];
-            }
-
             if (!isset($reportData[$empKey][$dateKey])) {
                 $reportData[$empKey][$dateKey] = [
                     'employeeName' => $task->employee->name ?? '-',
-                    'designation' => $designations[$task->employee->designation] ?? '-', // fetch name
+                    'designation' => $designations[$task->employee->designation] ?? '-',
                     'workMinutes' => 0,
                 ];
             }
 
-            // Work time excludes Lunch (1) and Break (3)
-            $hours = $task->hours ?? 0;
-            $minutes = $task->minutes ?? 0;
-            $totalMins = $hours * 60 + $minutes;
+            $totalMins = ($task->hours * 60) + $task->minutes;
 
+            // Exclude lunch (1) and break (3)
             if (!in_array($task->activityId, [1, 3])) {
                 $reportData[$empKey][$dateKey]['workMinutes'] += $totalMins;
             }
         }
 
-        // Format work hours, total hours is always 8:30
+        // Format hours
         foreach ($reportData as $empId => &$dates) {
             foreach ($dates as $date => &$data) {
-                $data['totalHours'] = '08:30'; // standard total hours
-                $data['workHours'] = str_pad(floor($data['workMinutes'] / 60), 2, "0", STR_PAD_LEFT) . ':' . str_pad($data['workMinutes'] % 60, 2, "0", STR_PAD_LEFT);
+                $workMinutes = $data['workMinutes'];
+                $data['totalHours'] = '08:30';
+
+                $data['workHours'] = sprintf(
+                    "%02d:%02d",
+                    floor($workMinutes / 60),
+                    $workMinutes % 60
+                );
             }
         }
 
-        return view('report.employeeBased', compact('employees', 'reportData', 'fromDate', 'toDate', 'employeeId', 'period'));
+        return view('report.employeeBased', compact(
+            'employees',
+            'reportData',
+            'fromDate',
+            'toDate',
+            'employeeId',
+            'period'
+        ));
     }
+
     public function employeeReportAjax(Request $request)
     {
         $employees = Employee::all();
@@ -392,15 +428,21 @@ class ReportController extends Controller
             ];
         }
 
-        // Calculate final total across all
         $grandHours = floor($grandTotalMinutes / 60);
         $grandMinutes = $grandTotalMinutes % 60;
+
         $grandTotal = sprintf('%02d:%02d', $grandHours, $grandMinutes);
+
+        // Pass hours and minutes separately
+        $grandTotalHours = $grandHours;
+        $grandTotalMinutesOnly = $grandMinutes;
 
         return view('report.projectBased', [
             'projects' => $projects,
             'reportData' => $reportData,
             'grandTotal' => $grandTotal,
+            'grandTotalHours' => $grandTotalHours,
+            'grandTotalMinutes' => $grandTotalMinutesOnly,
             'request' => $request
         ]);
     }

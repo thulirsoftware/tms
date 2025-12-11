@@ -42,7 +42,7 @@
 
             <div style="background-color:#f5f5f5;font-weight:bold; float: end;text-align:end;">
                 <td colspan="3" class="text-right">Grand Total Hours:</td>
-                <td style="color:green;">{{ $grandTotal }}</td>
+                <td style="color:green;">{{ $grandTotalHours }} hr {{ $grandTotalMinutes }} min</td>
             </div>
 
         @endif
