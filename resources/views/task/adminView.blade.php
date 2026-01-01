@@ -524,7 +524,9 @@
             </table>
             <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
                 @if(Auth::user()->type == 'admin' || Auth::user()->hasPermission('Tasks'))
-                    <a class="btn btn-info btn-rounded" href="{{ url('/Admin/Task') }}">
+                        <?php  $active_tab = $employee->user->type == 'employee' ? 'employees' : 
+                        'interns'; ?>
+                    <a class="btn btn-info btn-rounded" href="{{ url('/Admin/Task?active_tab=' . $active_tab) }}">
                         Back
                     </a>
                 @else

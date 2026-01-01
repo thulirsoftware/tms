@@ -1,15 +1,23 @@
 @extends('theme.default')
 
 @section('content')
-
-    <!-- List of Employees -->
-    <div class="row">
-        <div class="col-lg-12">
-            <h1 class="page-header">List of Employees</h1>
-        </div>
+<div class="row">
+    <div class="col-lg-9" style="padding-bottom: 10px; ">
+        <h1 class="page-header">List of Employees Task Reports</h1>
     </div>
+ 
+</div>
 
-    <table class="table table-striped table-condensed table-bordered table-hover">
+<ul class="nav nav-pills" style="
+    padding-bottom: 12px;
+">
+    <li class="@if($active_tab =='employees') active @endif"><a data-toggle="pill" href="#employees">Employees</a></li>
+    <li class="@if($active_tab =='interns') active @endif"><a data-toggle="pill" href="#interns">Interns</a></li>
+</ul>
+
+<div class="tab-content">
+    <div id="employees" class="tab-pane fade @if($active_tab =='employees') in active @endif">
+           <table class="table table-striped table-condensed table-bordered table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -44,8 +52,8 @@
 
                     @if(Auth::user()->type == 'admin' || Auth::user()->hasPermission('Tasks'))
                         <td>
-                            <a class="btn btn-primary" href="{{ url('Admin/Task/' . $employee->id) }}">View</a>&nbsp;
-                            <a class="btn btn-primary" href="{{ url('Admin/Task/create/' . $employee->id) }}">Assign</a>
+                            <a class="btn btn-primary" href="{{ url('Admin/Task/' . $employee->id.'?active_tab=employees') }}">View</a>&nbsp;
+                            <a class="btn btn-primary" href="{{ url('Admin/Task/create/' . $employee->id.'?active_tab=employees') }}">Assign</a>
                         </td>
                     @else
                         <td><a class="btn btn-primary" href="{{ route('teamTaskShow', ['employee' => $employee->id]) }}">View</a>
@@ -54,16 +62,10 @@
                 </tr>
             @endforeach
         </tbody>
-    </table>
-
-    <!-- List of Interns -->
-    <div class="row">
-        <div class="col-lg-12">
-            <h1 class="page-header">List of Interns</h1>
-        </div>
+    </table> 
     </div>
-
-    <table class="table table-striped table-condensed table-bordered table-hover">
+    <div id="interns" class="tab-pane fade @if($active_tab =='interns') in active @endif ">
+           <table class="table table-striped table-condensed table-bordered table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -95,8 +97,8 @@
                     <td>{{ $employeeHours[$employee->id] ?? '00h 00m 00s' }}</td>
                     @if(Auth::user()->type == 'admin' || Auth::user()->hasPermission('Tasks'))
                         <td>
-                            <a class="btn btn-primary" href="{{ url('Admin/Task/' . $intern->employee->id) }}">View</a>&nbsp;
-                            <a class="btn btn-primary" href="{{ url('Admin/Task/create/' . $intern->employee->id) }}">Assign</a>
+                            <a class="btn btn-primary" href="{{ url('Admin/Task/' . $intern->employee->id.'?active_tab=interns') }}">View</a>&nbsp;
+                            <a class="btn btn-primary" href="{{ url('Admin/Task/create/' . $intern->employee->id.'?active_tab=interns') }}">Assign</a>
                         </td>
                     @else
                         <td><a class="btn btn-primary"
@@ -106,5 +108,9 @@
             @endforeach
         </tbody>
     </table>
+    </div>
+</div>
+
+ 
 
 @endsection

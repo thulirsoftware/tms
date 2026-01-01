@@ -38,7 +38,7 @@ class TaskController extends Controller
      */
     
 
-    public function index()
+    public function index(Request $request)
     {
         // Fetch all active employees excluding interns
         $employees = Employee::whereNull('empStatus')
@@ -77,13 +77,14 @@ class TaskController extends Controller
                 $secs = $seconds % 60;
                 return sprintf('%02dh %02dm %02ds', $hours, $minutes, $secs);
             });
-
+        $active_tab = $request->active_tab ?? 'employees';
         return view('task.index', [
             'employees' => $employees,
             'employeeTasks' => $employeeTasks,
             'interns' => $interns,
             'internTasks' => $internTasks,
             'employeeHours' => $employeeHours,
+            'active_tab' => $active_tab,    
         ]);
     }
 
@@ -391,7 +392,7 @@ class TaskController extends Controller
                 ];
             }
         }
-
+        
         return view('task.adminView', compact(
             'employee',
             'assignedTasks',
