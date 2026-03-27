@@ -1,0 +1,211 @@
+<thead>
+                    <tr>
+                        <th>As.Date</th>
+                        <th>Taken Date</th>
+                        <th>Employee</th>
+                        <th>Project</th>
+                        <th>Activity</th>
+                        <th>Instruction</th>
+                        <th>Comment</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>HH:MM</th>
+                         <th>Total Hours</th>
+                        <th>Current Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                        $todayLunchHours = 0;
+    $todayLunchMinutes = 0;
+    $sumLunchMins = 0;
+    $todayBreakHours = 0;
+    $todayBreakMinutes = 0;
+    $sumBreakMins = 0;
+    $todayTotalHours = 0; 
+    $todayTotalMinutes = 0;
+    $sumMinutes = 0;?>
+    @php
+$groupedTasks = $tasks->groupBy(function($task) {
+    return date('Y-m-d', strtotime($task->takenDate));
+});
+@endphp
+@foreach($groupedTasks as $date => $dayTasks)
+
+    @php
+          $rowCount = count($dayTasks);
+        $totalHours = 0;
+        $totalMinutes = 0;
+        $rowIndex = 0;
+          foreach($dayTasks as $key => $task)
+          {
+               $hours = (int)($task->hours ?? 0);
+                $minutes = (int)($task->minutes ?? 0);
+                $totalHours += $hours;
+                $totalMinutes += $minutes;
+          }
+
+              
+           
+                
+        
+    @endphp
+     @php
+                    $totalHours += intdiv($totalMinutes, 60);
+                    $totalMinutes = $totalMinutes % 60;
+                @endphp
+        @foreach($dayTasks as $key => $task)
+                   @php
+            $hours = (int)($task->hours ?? 0);
+            $minutes = (int)($task->minutes ?? 0);
+          
+         @endphp
+          
+                                    <tr>
+
+                                        <td>{{date('M-d', strtotime($task->assignedDate))}}</td>
+                                         @if($key == 0)
+                                            <td rowspan="{{ $rowCount }}" class="align-top fw-bold" style="vertical-align: middle;">
+                                                {{ date('M d', strtotime($date)) }}
+                                            </td>
+                                        @endif
+                                        <td>
+                                            @if($task->employee)
+                                                {{ $task->employee->name ?? '-' }}
+                                            @else
+                                                <span>-</span>
+                                            @endif
+                                        </td>
+                                        @if($task->project !== null)
+                                            <td>{{$task->project->projectName ?? '-'}}
+                                                @if($task->priority != null)
+                                                    <sup><i
+                                                            class="fa fa-flag {{($task->priority != 0) ? (($task->priority == 1) ? ('supMedium') : 'supLow') : 'supHigh'}}"></i></sup>
+                                                @endif
+                                            </td>
+                                        @else
+                                            <td></td>
+                                        @endif
+                                        <td>{{$task->activity->name}}</td>
+                                        <td>
+                                            <p data-toggle="tooltip" data-placement="top" class="red-tooltip"
+                                                title="{{$task->instruction}}">
+                                                {{(strlen($task->instruction) > 20) ? substr($task->instruction, 0, 16) . ' ...' : $task->instruction}}
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p data-toggle="tooltip" data-placement="top" class="red-tooltip" title="{{$task->comment}}">
+                                                {{(strlen($task->comment) > 20) ? substr($task->comment, 0, 16) . ' ...' : $task->comment}}
+                                            </p>
+                                        </td>
+                                        <td>{{date('h:i A', strtotime($task->startTime))}}</td>
+                                        <td>{{date('h:i A', strtotime(($task->endTime != '') ? $task->endTime : (date('H:i:s'))))}}</td>
+                                        @if($task->hours != null && $task->minutes != null && $task->endTime != null)
+                                            <td>{{$task->hours}}:{{$task->minutes}}</td>
+                                        @else
+                                                        <?php 
+                                                                                                                                                                $etime = explode(':', date('H:i:s'));
+                                            $stime = explode(':', date('H:i:s', strtotime($task->startTime)));
+                                            $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
+                                            $task->hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
+                                            $task->minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT); 
+                                                                                                                                                                ?>
+                                                        <td>{{$task->hours}}:{{$task->minutes}}</td>
+                                        @endif
+                     @if($key == 0)
+            
+                <td class="fw-bold text-primary"  rowspan="{{ $rowCount }}"  style="vertical-align: middle;">
+                    {{ $totalHours }} hours {{ str_pad($totalMinutes, 2, '0', STR_PAD_LEFT) }} minutes
+                </td>
+                @endif
+              
+              
+       
+                                        <td>
+      
+                                            @if(isset($task->state) && isset($task->state->name))
+                                                {{$task->state->name}}
+                                            @else
+                                                <span>State name not available</span>
+                                            @endif
+
+                                            @if($task->id == $task->relatedTaskId && isset($tasks[$key]['flag']))
+                                                [ {{$tasks[$key]['flag']}} ]
+                                            @else
+                                                <!-- This is the negative case, where the condition is not met -->
+                                                <span>No related task flag</span>
+                                            @endif
+                                        </td>
+
+                                    </tr>
+                                      @php $rowIndex++; @endphp
+                                    <?php 
+                            if ($task->activityId == '1')//For Lunch Time
+                        {
+                            $todayLunchHours += $task->hours;
+                            $sumLunchMins += $task->minutes;
+                        }
+                        if ($task->activityId == '3')//For Break Time
+                        {
+                            $todayBreakHours += $task->hours;
+                            $sumBreakMins += $task->minutes;
+                        }
+                        if (!in_array($task->activityId, [1, 3]))//For Work Time
+                        {
+                            $todayTotalHours += $task->hours;
+                            $sumMinutes += $task->minutes;
+                        }
+                        if (count($tasks) == $key + 1) {
+                            if ($sumMinutes > 0) {
+
+                                $todayTotalHours += floor($sumMinutes / 60);
+                                $todayTotalMinutes = floor($sumMinutes % 60);
+
+                            } else {
+                                $todayTotalMinutes = $sumMinutes;
+                            }
+
+                            if ($sumLunchMins > 0) {
+
+                                $todayLunchHours += floor($sumLunchMins / 60);
+                                $todayLunchMinutes = floor($sumLunchMins % 60);
+
+                            } else {
+                                $todayLunchMinutes = $sumLunchMins;
+                            }
+
+                            if ($sumBreakMins > 0) {
+
+                                $todayBreakHours += floor($sumBreakMins / 60);
+                                $todayBreakMinutes = floor($sumBreakMins % 60);
+
+                            } else {
+                                $todayBreakMinutes = $sumBreakMins;
+                            }
+                        }
+                                                                                            ?>
+                    @endforeach
+                   
+  @endforeach
+                </tbody>
+                <tr>
+
+                    <th colspan="03" style="text-align: right;">
+                        Lunch Hours:
+                    </th>
+                    <th style="color: red">
+                        {{str_pad($todayLunchHours, 2, "0", STR_PAD_LEFT)}}:{{str_pad($todayLunchMinutes, 2, "0", STR_PAD_LEFT)}}
+                    </th>
+                    <th colspan="02" style="text-align: right;">
+                        Break Hours:
+                    </th>
+                    <th style="color: red">
+                        {{str_pad($todayBreakHours, 2, "0", STR_PAD_LEFT)}}:{{str_pad($todayBreakMinutes, 2, "0", STR_PAD_LEFT)}}
+                    </th>
+                    <th colspan="02" style="text-align: right;">
+                        Work Hours:
+                    </th>
+                    <th style="color: red">
+                        {{str_pad($todayTotalHours, 2, "0", STR_PAD_LEFT)}}:{{str_pad($todayTotalMinutes, 2, "0", STR_PAD_LEFT)}}
+                    </th>
+                </tr>
