@@ -107,16 +107,74 @@ class ReportController extends Controller
 
         }
 
-        $tasks = $tasks->get();
-        foreach ($tasks as $key => $task) {
-            if (Task::where('relatedTaskId', $task->relatedTaskId)->where('status', 4)->count() > 0) {
-                $tasks[$key]['flag'] = "Finished";
+        $perPage = $request->get('per_page', 50);
+        $tasks = $tasks->paginate($perPage)->appends($request->all());
 
+        $dailyTotals = [];
+
+        $summary = [
+            'lunch_hours' => 0,
+            'lunch_minutes' => 0,
+            'break_hours' => 0,
+            'break_minutes' => 0,
+            'work_hours' => 0,
+            'work_minutes' => 0,
+        ];
+
+        foreach ($tasks as $task) {
+
+            $date = date('Y-m-d', strtotime($task->takenDate));
+
+            // unified time calculation
+            if ($task->hours != null && $task->minutes != null && $task->endTime != null) {
+                $hours = (int)$task->hours;
+                $minutes = (int)$task->minutes;
+            } else {
+                $etime = explode(':', date('H:i:s'));
+                $stime = explode(':', date('H:i:s', strtotime($task->startTime)));
+                $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
+
+                $hours = intval($allMinutes / 60);
+                $minutes = intval($allMinutes % 60);
+            }
+
+            // ---------- DAILY TOTAL ----------
+            if (!isset($dailyTotals[$date])) {
+                $dailyTotals[$date] = ['hours' => 0, 'minutes' => 0];
+            }
+
+            $dailyTotals[$date]['hours'] += $hours;
+            $dailyTotals[$date]['minutes'] += $minutes;
+
+            // ---------- SUMMARY ----------
+            if ($task->activityId == 1) { // Lunch
+                $summary['lunch_hours'] += $hours;
+                $summary['lunch_minutes'] += $minutes;
+            } elseif ($task->activityId == 3) { // Break
+                $summary['break_hours'] += $hours;
+                $summary['break_minutes'] += $minutes;
+            } else { // Work
+                $summary['work_hours'] += $hours;
+                $summary['work_minutes'] += $minutes;
             }
         }
-        return view('report.taskReport', compact('employee', 'employees', 'designations', 'projects', 'activities', 'taskStatus', 'priorities', 'tasks'));
+
+        // normalize daily totals
+        foreach ($dailyTotals as $date => $value) {
+            $dailyTotals[$date]['hours'] += intdiv($value['minutes'], 60);
+            $dailyTotals[$date]['minutes'] = $value['minutes'] % 60;
+        }
+
+        // normalize summary
+        foreach (['lunch', 'break', 'work'] as $type) {
+            $summary[$type . '_hours'] += intdiv($summary[$type . '_minutes'], 60);
+            $summary[$type . '_minutes'] = $summary[$type . '_minutes'] % 60;
+        }
+        
+        return view('report.taskReport', compact('employee', 'employees', 'designations', 'projects', 'activities', 'taskStatus', 'priorities', 'tasks', 'dailyTotals', 'summary'));
 
     }
+
     public function employeeReport(Request $request)
     {
         $employees = Employee::all();
@@ -396,16 +454,24 @@ class ReportController extends Controller
             $tasks->whereDate('takenDate', '<=', $request->toDate);
         }
 
-        // Get all filtered tasks
-        $tasks = $tasks->get();
+        // Clone for grand total (full data)
+        $allTasks = (clone $tasks)->get();
+
+        // Pagination
+        $perPage = $request->get('per_page', 50);
+        $tasks = $tasks->paginate($perPage)->appends($request->all());
 
         // Group by date + project + activity
-        $grouped = $tasks->groupBy(function ($item) {
+        $grouped = $tasks->getCollection()->groupBy(function ($item) {
             return $item->takenDate . '-' . $item->projectId . '-' . $item->activityId;
         });
 
         $reportData = [];
         $grandTotalMinutes = 0;
+
+        $groupedAll = $allTasks->groupBy(function ($item) {
+            return $item->takenDate . '-' . $item->projectId . '-' . $item->activityId;
+        });
 
         foreach ($grouped as $group) {
             $first = $group->first();
@@ -443,9 +509,11 @@ class ReportController extends Controller
             'grandTotal' => $grandTotal,
             'grandTotalHours' => $grandTotalHours,
             'grandTotalMinutes' => $grandTotalMinutesOnly,
-            'request' => $request
+            'request' => $request,
+            'tasks' => $tasks
         ]);
     }
+
     public function taskReport(Request $request)
     {
         $query = Task::query()
@@ -480,11 +548,14 @@ class ReportController extends Controller
             $query->whereDate('tasks.assignedDate', '<=', $request->to_date);
         }
 
-        $tasks = $query->get();
+        $perPage = $request->get('per_page', 50);
+        $tasks = $query->paginate($perPage)->appends($request->all());
 
         // ✅ Use users.id for AssignedBy dropdown
-        $assignedByList = $tasks->pluck('assigned_by_name', 'assigned_by_user_id')->unique();
-        $employees = $tasks->pluck('assigned_to_name', 'assigned_to_emp_id')->unique();
+        $collection = $tasks->getCollection();
+
+        $assignedByList = $collection->pluck('assigned_by_name', 'assigned_by_user_id')->unique();
+        $employees = $collection->pluck('assigned_to_name', 'assigned_to_emp_id')->unique();
 
         if ($request->ajax()) {
             return response()->json([

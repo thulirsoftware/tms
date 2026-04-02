@@ -72,6 +72,86 @@
 
 
         </table>
+        @if ($reportData && count($reportData) > 0)
+            <div style="width: 100%; margin: 15px 0;">
+
+                {{-- TOP: Showing --}}
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 5px; font-size: 13px; color: #777;">
+                    Showing {{ $tasks->firstItem() }}–{{ $tasks->lastItem() }} of {{ $tasks->total() }}
+                </div>
+
+                {{-- BOTTOM: Rows + Pagination --}}
+                <div style="display: flex; justify-content: flex-end; align-items: center;">
+
+                    {{-- Rows --}}
+                    <form method="GET" id="perPageForm" style="display: flex; align-items: center; margin-right: 15px;">
+                        @foreach(request()->except('per_page') as $key => $value)
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endforeach
+
+                        <label style="margin-right: 5px; margin-bottom: 0;">Rows:</label>
+                        <select name="per_page" onchange="this.form.submit()" style="width: auto;">
+                            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                            <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200</option>
+                            <option value="500" {{ request('per_page') == 500 ? 'selected' : '' }}>500</option>
+                        </select>
+                    </form>
+
+                    {{-- Pagination --}}
+                    <ul class="pagination" style="margin: 0;">
+
+                        {{-- Prev --}}
+                        @if ($tasks->onFirstPage())
+                            <li class="page-item disabled"><span class="page-link">Prev</span></li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $tasks->previousPageUrl() }}">Prev</a>
+                            </li>
+                        @endif
+
+                        @php
+                            $start = max($tasks->currentPage() - 2, 1);
+                            $end = min($tasks->currentPage() + 2, $tasks->lastPage());
+                        @endphp
+
+                        @if ($start > 1)
+                            <li class="page-item"><a class="page-link" href="{{ $tasks->url(1) }}">1</a></li>
+                            @if ($start > 2)
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            @endif
+                        @endif
+
+                        @for ($i = $start; $i <= $end; $i++)
+                            <li class="page-item {{ $tasks->currentPage() == $i ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $tasks->url($i) }}">{{ $i }}</a>
+                            </li>
+                        @endfor
+
+                        @if ($end < $tasks->lastPage())
+                            @if ($end < $tasks->lastPage() - 1)
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            @endif
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $tasks->url($tasks->lastPage()) }}">{{ $tasks->lastPage() }}</a>
+                            </li>
+                        @endif
+
+                        {{-- Next --}}
+                        @if ($tasks->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $tasks->nextPageUrl() }}">Next</a>
+                            </li>
+                        @else
+                            <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        @endif
+
+                    </ul>
+
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- Excel Export Script --}}
