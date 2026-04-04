@@ -304,127 +304,136 @@ class AjaxController extends Controller
 
     public function setInterrupt(Request $request)
     {
-        $isIntern = Auth::user()->type === 'intern';
-        $taskModel = $isIntern ? InternTask::class : Task::class;
+        DB::transaction(function () use ($request) {
 
-        $employee = Employee::where('empId', Auth::user()->empId)->first();
-        if ($employee != null) {
-            // Find the current task for the employee
-            $task = $taskModel::where('empId', $employee->id)->where('status', 2)->first();
+            $isIntern = Auth::user()->type === 'intern';
+            $taskModel = $isIntern ? InternTask::class : Task::class;
 
-            if ($task != null) {
-                $checkType = CfgActivity::find($task->activityId);
-                if ($checkType->type == 'INT') {
-                    $task->comment = 'Completed due to ' . $request->interruptFor;
-                    $task->status = 4; // Completed
-                } else {
-                    $task->comment = 'Paused due to ' . $request->interruptFor;
-                    $task->status = 3; // Paused
+            $employee = Employee::where('empId', Auth::user()->empId)->first();
+            if ($employee != null) {
+                // Find the current task for the employee
+                $task = $taskModel::where('empId', $employee->id)->where('status', 2)->first();
+
+                if ($task != null) {
+                    $checkType = CfgActivity::find($task->activityId);
+                    if ($checkType->type == 'INT') {
+                        $task->comment = 'Completed due to ' . $request->interruptFor;
+                        $task->status = 4; // Completed
+                    } else {
+                        $task->comment = 'Paused due to ' . $request->interruptFor;
+                        $task->status = 3; // Paused
+                    }
+
+                    $task->endTime = $request->time;
+                    $etime = explode(':', $request->time);
+                    $stime = explode(':', $task->startTime);
+                    $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
+                    $task->hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
+                    $task->minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT);
+                    $task->save();
                 }
 
-                $task->endTime = $request->time;
-                $etime = explode(':', $request->time);
-                $stime = explode(':', $task->startTime);
-                $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
-                $task->hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
-                $task->minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT);
-                $task->save();
+                // Create a new interrupt task
+                $newTask = new $taskModel;
+                $newTask->assignedDate = date('Y-m-d');
+                $newTask->takenDate = date('Y-m-d');
+                $newTask->assignedBy = Auth::user()->id;
+                $newTask->projectId = 72;
+
+                if ($request->interruptFor == 'meeting') {
+                    $newTask->activityId = 2;
+                } elseif ($request->interruptFor == 'lunch') {
+                    $newTask->activityId = 1;
+                } elseif ($request->interruptFor == 'break') {
+                    $newTask->activityId = 3;
+                }
+
+                $newTask->instruction = 'Start ' . ucfirst($request->interruptFor);
+                $newTask->priority = 1;
+                $newTask->startTime = $request->time;
+                $newTask->empId = $employee->id;
+                $newTask->comment = null;
+                $newTask->endTime = null;
+                $newTask->status = 2; // In Progress
+                $newTask->approval = 'yes';
+                $newTask->save();
+                $newTask->relatedTaskId = $newTask->id;
+                $newTask->save();
             }
 
-            // Create a new interrupt task
-            $newTask = new $taskModel;
-            $newTask->assignedDate = date('Y-m-d');
-            $newTask->takenDate = date('Y-m-d');
-            $newTask->assignedBy = Auth::user()->id;
-            $newTask->projectId = 72;
-            if ($request->interruptFor == 'meeting') {
-                $newTask->activityId = 2;
-            } elseif ($request->interruptFor == 'lunch') {
-                $newTask->activityId = 1;
-            } elseif ($request->interruptFor == 'break') {
-                $newTask->activityId = 3;
-            }
-            $newTask->instruction = 'Start ' . ucfirst($request->interruptFor);
-            $newTask->priority = 1;
-            $newTask->startTime = $request->time;
-            $newTask->empId = $employee->id;
-            $newTask->comment = null;
-            $newTask->endTime = null;
-            $newTask->status = 2; // In Progress
-            $newTask->approval = 'yes';
-            $newTask->save();
-            $newTask->relatedTaskId = $newTask->id;
-            $newTask->save();
-        }
+        });
 
         return ['status' => true];
     }
 
     public function SetMeetingInterrupt(Request $request)
     {
-        $isIntern = Auth::user()->type === 'intern';
-        $taskModel = $isIntern ? InternTask::class : Task::class;
+        DB::transaction(function () use ($request) {
 
-        $employee = Employee::where('empId', Auth::user()->empId)->first();
-        if ($employee != null) {
-            // Find the current task for the employee
-            $task = $taskModel::where('empId', $employee->id)->where('status', 2)->first();
+            $isIntern = Auth::user()->type === 'intern';
+            $taskModel = $isIntern ? InternTask::class : Task::class;
 
-            if ($task != null) {
-                $checkType = CfgActivity::find($task->activityId);
+            $employee = Employee::where('empId', Auth::user()->empId)->first();
+            if ($employee != null) {
+                // Find the current task for the employee
+                $task = $taskModel::where('empId', $employee->id)->where('status', 2)->first();
 
-                if ($checkType->type == 'INT') {
-                    $task->comment = 'Completed due to ' . $request->interruptFor;
-                    $task->status = 4; // Completed
-                } else {
-                    $task->comment = 'Paused due to ' . $request->interruptFor;
-                    $task->status = 3; // Paused
+                if ($task != null) {
+                    $checkType = CfgActivity::find($task->activityId);
+
+                    if ($checkType->type == 'INT') {
+                        $task->comment = 'Completed due to ' . $request->interruptFor;
+                        $task->status = 4; // Completed
+                    } else {
+                        $task->comment = 'Paused due to ' . $request->interruptFor;
+                        $task->status = 3; // Paused
+                    }
+
+                    // Always work in H:i:s
+                    $endTime = Carbon::createFromFormat('H:i:s', $request->time);
+                    $startTime = Carbon::createFromFormat('H:i:s', $task->startTime);
+
+                    $diffMinutes = $endTime->diffInMinutes($startTime);
+
+                    $task->endTime = $endTime->format('H:i:s');
+                    $task->hours = str_pad(intval($diffMinutes / 60), 2, "0", STR_PAD_LEFT);
+                    $task->minutes = str_pad($diffMinutes % 60, 2, "0", STR_PAD_LEFT);
+                    $task->save();
                 }
 
-                // Always work in H:i:s
-                $endTime = Carbon::createFromFormat('H:i:s', $request->time);
-                $startTime = Carbon::createFromFormat('H:i:s', $task->startTime);
+                // Create a new interrupt task
+                $newTask = new $taskModel;
+                $newTask->assignedDate = date('Y-m-d');
+                $newTask->takenDate = date('Y-m-d');
+                $newTask->assignedBy = Auth::user()->id;
+                $newTask->projectId = $request->projectId;
 
-                $diffMinutes = $endTime->diffInMinutes($startTime);
+                if ($request->interruptFor == 'meeting') {
+                    $newTask->activityId = 2;
+                } elseif ($request->interruptFor == 'lunch') {
+                    $newTask->activityId = 1;
+                } elseif ($request->interruptFor == 'break') {
+                    $newTask->activityId = 3;
+                }
 
-                $task->endTime = $endTime->format('H:i:s');
-                $task->hours = str_pad(intval($diffMinutes / 60), 2, "0", STR_PAD_LEFT);
-                $task->minutes = str_pad($diffMinutes % 60, 2, "0", STR_PAD_LEFT);
-                $task->save();
+                $newTask->instruction = 'Start ' . ucfirst($request->interruptFor);
+                $newTask->priority = 1;
+                $newTask->startTime = Carbon::createFromFormat('H:i:s', $request->time)->format('H:i:s');
+                $newTask->empId = $employee->id;
+                $newTask->comment = null;
+                $newTask->endTime = null;
+                $newTask->status = 2; // In Progress
+                $newTask->approval = 'yes';
+                $newTask->save();
+
+                $newTask->relatedTaskId = $newTask->id;
+                $newTask->save();
             }
 
-            // Create a new interrupt task
-            $newTask = new $taskModel;
-            $newTask->assignedDate = date('Y-m-d');
-            $newTask->takenDate = date('Y-m-d');
-            $newTask->assignedBy = Auth::user()->id;
-            $newTask->projectId = $request->projectId;
-
-            if ($request->interruptFor == 'meeting') {
-                $newTask->activityId = 2;
-            } elseif ($request->interruptFor == 'lunch') {
-                $newTask->activityId = 1;
-            } elseif ($request->interruptFor == 'break') {
-                $newTask->activityId = 3;
-            }
-
-            $newTask->instruction = 'Start ' . ucfirst($request->interruptFor);
-            $newTask->priority = 1;
-            $newTask->startTime = Carbon::createFromFormat('H:i:s', $request->time)->format('H:i:s');
-            $newTask->empId = $employee->id;
-            $newTask->comment = null;
-            $newTask->endTime = null;
-            $newTask->status = 2; // In Progress
-            $newTask->approval = 'yes';
-            $newTask->save();
-
-            $newTask->relatedTaskId = $newTask->id;
-            $newTask->save();
-        }
+        });
 
         return ['status' => true];
     }
-
     public function setFilter(Request $request)
     {
         Session::put('task.filter', $request->all());

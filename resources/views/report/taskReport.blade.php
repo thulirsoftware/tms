@@ -114,9 +114,6 @@
 
                                     @if($task->id == $task->relatedTaskId && isset($tasks[$key]['flag']))
                                         [ {{$tasks[$key]['flag']}} ]
-                                    @else
-                                        <!-- This is the negative case, where the condition is not met -->
-                                        <span>No related task flag</span>
                                     @endif
                                 </td>
 
