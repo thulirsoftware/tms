@@ -223,7 +223,7 @@
          });
 
          // Optional: prevent toDate from being earlier than fromDate if already selected
-         toDate.addEventListener('change', function () {
+         toDate.addEventListener('blur', function () {
             if (fromDate.value && this.value < fromDate.value) {
                alert("To Date cannot be earlier than From Date.");
                this.value = fromDate.value;

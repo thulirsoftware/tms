@@ -340,17 +340,17 @@
                                                                 </td>
                                                             </tr>
                                                             <?php 
-                                                                                                                        if ($task->activityId == '46')//For Lunch Time
+                                                                                                                        if ($task->activityId == '1')//For Lunch Time
                                             {
                                                 $todayLunchHours += $task->hours;
                                                 $sumLunchMins += $task->minutes;
                                             }
-                                            if ($task->activityId == '49')//For Break Time
+                                            if ($task->activityId == '3')//For Break Time
                                             {
                                                 $todayBreakHours += $task->hours;
                                                 $sumBreakMins += $task->minutes;
                                             }
-                                            if (!in_array($task->activityId, [46, 49]))//For Work Time
+                                            if (!in_array($task->activityId, [1, 3]))//For Work Time
                                             {
                                                 $todayTotalHours += $task->hours;
                                                 $sumMinutes += $task->minutes;

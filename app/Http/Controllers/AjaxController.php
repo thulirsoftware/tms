@@ -131,35 +131,35 @@ class AjaxController extends Controller
                 ->where('endTime', '!=', null)
                 ->get() :
                 Task::where('takenDate', $task->takenDate)
-                ->where('endTime', '!=', null)
-                ->get();
+                    ->where('endTime', '!=', null)
+                    ->get();
             $totalSeconds = 0;
 
             foreach ($tasksInDate as $t) {
 
-                 list($sh, $sm, $ss) = explode(':', $t->startTime);
+                list($sh, $sm, $ss) = explode(':', $t->startTime);
                 $startSeconds = ($sh * 3600) + ($sm * 60) + $ss;
 
-                 list($eh, $em, $es) = explode(':', $t->endTime);
+                list($eh, $em, $es) = explode(':', $t->endTime);
                 $endSeconds = ($eh * 3600) + ($em * 60) + $es;
 
-                 if ($endSeconds < $startSeconds) {
+                if ($endSeconds < $startSeconds) {
                     $endSeconds += 24 * 3600;
                 }
 
-                 $totalSeconds += ($endSeconds - $startSeconds);
+                $totalSeconds += ($endSeconds - $startSeconds);
             }
             $tasksInEndTimeNull = $isIntern ? InternTask::where('takenDate', $task->takenDate)
                 ->where('endTime', '=', null)
                 ->first() :
                 Task::where('takenDate', $task->takenDate)
-                ->where('endTime', '=', null)
-                ->first();
+                    ->where('endTime', '=', null)
+                    ->first();
             $diffInHours = 0;
             if ($tasksInEndTimeNull) {
                 $date = $task->takenDate; // YYYY-MM-DD
                 $start = Carbon::createFromFormat('Y-m-d H:i:s', $date . ' ' . $task->startTime);
-                $now   =  Carbon::createFromFormat('Y-m-d H:i:s', date('Y-m-d') . ' ' . $request->time);
+                $now = Carbon::createFromFormat('Y-m-d H:i:s', date('Y-m-d') . ' ' . $request->time);
 
                 $diffInHours = $start->diffInHours($now);
             }
@@ -212,8 +212,8 @@ class AjaxController extends Controller
             $minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT);
             $moreThan8 = 0;
         }
-        
-         
+
+
         $task->comment = $request->taskComment;
         $task->status = $request->taskStatus;
         $task->endTime = $endTimeFormatted;
@@ -338,7 +338,7 @@ class AjaxController extends Controller
                 $newTask->assignedDate = date('Y-m-d');
                 $newTask->takenDate = date('Y-m-d');
                 $newTask->assignedBy = Auth::user()->id;
-                $newTask->projectId = 72;
+                $newTask->projectId = 76;
 
                 if ($request->interruptFor == 'meeting') {
                     $newTask->activityId = 2;
@@ -467,7 +467,7 @@ class AjaxController extends Controller
     public function checkNewNotification(Request $request)
     {
         $oldCount = Session::get('notificationCount');
-        
+
         if (count(Auth::user()->unreadNotifications) > 0 && $oldCount < count(Auth::user()->unreadNotifications)) {
             Session::put('notificationCount', count(Auth::user()->unreadNotifications));
             return ['status' => true, 'count' => count(Auth::user()->unreadNotifications), 'list' => Auth::user()->unreadNotifications];
@@ -513,28 +513,28 @@ class AjaxController extends Controller
                     $takenleave->save();
                 }
 
-                if($request->status == 'yes'){
+                if ($request->status == 'yes') {
                     $employee = Employee::find($request->empId);
 
                     $user = User::where('empId', $employee->empId)
-                    ->first();
+                        ->first();
 
-                 
+
                     $user->notify(new ApproveReminder($leave, $employee, 'Leave approved'));
-           
+
                 }
-                 if($request->status != 'yes'){
-                     $employee = Employee::find($request->empId);
+                if ($request->status != 'yes') {
+                    $employee = Employee::find($request->empId);
 
                     $user = User::where('empId', $employee->empId)
-                    ->first();
+                        ->first();
 
                     $user->notify(new DeclinedReminder($leave, $employee, 'Leave declined'));
-           
+
                 }
-                
-               
-                
+
+
+
 
                 return ['status' => true, 'leaveId' => $request->leaveId];
             }
@@ -562,11 +562,11 @@ class AjaxController extends Controller
                 }
                 $employee = Employee::find($request->empId);
 
-                    $user = User::where('empId', $employee->empId)
-                ->first();
+                $user = User::where('empId', $employee->empId)
+                    ->first();
 
                 $user->notify(new DeclinedReminder($leave, $employee, 'Leave declined'));
-           
+
                 return ['status' => true, 'leaveId' => $request->leaveId];
             }
         }
