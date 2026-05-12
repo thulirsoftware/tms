@@ -17,15 +17,22 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label>From Date</label>
                 <input type="date" id="fromDateFilter" class="form-control" value="{{ request()->fromDate }}">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label>To Date</label>
                 <input type="date" id="toDateFilter" class="form-control" value="{{ request()->toDate }}">
             </div>
+
+            <div class="col-md-2" style="margin-top:24px;text-align:right">
+                <button onclick="applyFilters()" class="btn btn-primary mr-2">
+                    Filter By Selection
+                </button>
+            </div>
+
             <div class="col-md-3" style="margin-top:24px;text-align:right">
                 <button id="downloadExcel" class="btn btn-success">
                     <i class="fa fa-download"></i> Download as Excel
@@ -159,20 +166,9 @@
 
     <script>
         $(function () {
-            // Auto filter refresh
-            $('#projectFilter, #fromDateFilter, #toDateFilter').on('change', function () {
-                var project = $('#projectFilter').val();
-                var fromDate = $('#fromDateFilter').val();
-                var toDate = $('#toDateFilter').val();
 
-                // Dynamic path for both Admin/User
-                var baseUrl = window.location.origin + window.location.pathname;
-
-                window.location.href = baseUrl + '?project=' + project + '&fromDate=' + fromDate + '&toDate=' + toDate;
-            });
-
-            // Excel download
             $('#downloadExcel').click(function () {
+
                 var table = document.getElementById('projectReportTable');
 
                 var projectName = $('#projectFilter option:selected').text() || 'All_Projects';
@@ -185,7 +181,24 @@
                     sheet: { name: "Project Report" }
                 });
             });
+
         });
+
+
+        function applyFilters() {
+
+            var project = $('#projectFilter').val();
+            var fromDate = $('#fromDateFilter').val();
+            var toDate = $('#toDateFilter').val();
+
+            var baseUrl = window.location.origin + window.location.pathname;
+
+            window.location.href =
+                baseUrl +
+                '?project=' + project +
+                '&fromDate=' + fromDate +
+                '&toDate=' + toDate;
+        }
     </script>
 
 @endsection

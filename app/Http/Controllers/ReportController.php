@@ -138,13 +138,19 @@ class ReportController extends Controller
                 $minutes = intval($allMinutes % 60);
             }
 
-            // ---------- DAILY TOTAL ----------
-            if (!isset($dailyTotals[$date])) {
-                $dailyTotals[$date] = ['hours' => 0, 'minutes' => 0];
-            }
+            // ---------- DAILY TOTAL (WORK ONLY) ----------
+            if ($task->activityId != 1 && $task->activityId != 3) {
 
-            $dailyTotals[$date]['hours'] += $hours;
-            $dailyTotals[$date]['minutes'] += $minutes;
+                if (!isset($dailyTotals[$date])) {
+                    $dailyTotals[$date] = [
+                        'hours' => 0,
+                        'minutes' => 0
+                    ];
+                }
+
+                $dailyTotals[$date]['hours'] += $hours;
+                $dailyTotals[$date]['minutes'] += $minutes;
+            }
 
             // ---------- SUMMARY ----------
             if ($task->activityId == 1) { // Lunch

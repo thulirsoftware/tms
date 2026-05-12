@@ -2,9 +2,13 @@
 @section('content')
     @include('theme.filters')
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-8">
 
-
+        </div>
+        <div class="col-md-2">
+            <a class="btn btn-success mr-2" onclick="filters()">
+                Filter By Selection
+            </a>
         </div>
         <div class="col-md-2">
             <input type="button" value="Download as Excel" class="btn btn-primary mt-2 float-right"
@@ -86,12 +90,12 @@
                                     <td>{{$task->hours}}:{{$task->minutes}}</td>
                                 @else
                                             <?php 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            $etime = explode(':', date('H:i:s'));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    $etime = explode(':', date('H:i:s'));
                                     $stime = explode(':', date('H:i:s', strtotime($task->startTime)));
                                     $allMinutes = (($etime[0] * 60) + $etime[1]) - (($stime[0] * 60) + $stime[1]);
                                     $task->hours = str_pad(intval($allMinutes / 60), 2, "0", STR_PAD_LEFT);
                                     $task->minutes = str_pad(intval($allMinutes % 60), 2, "0", STR_PAD_LEFT); 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ?>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ?>
                                             <td>{{$task->hours}}:{{$task->minutes}}</td>
                                 @endif
                                 @if($key == 0)
